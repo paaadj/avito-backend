@@ -1,0 +1,46 @@
+version: '3'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - celery_worker
+    environment:
+        DB_USERNAME: admin
+        DB_PASSWORD: admin
+        DB_HOST: postgres
+        DB_PORT: 5432
+        DB_NAME: avito-test
+        REDIS_HOST: redis
+        REDIS_PORT: 6379
+        REDIS_CACHE_DB: 0
+        REDIS_CELERY_DB: 1
+
+  postgres:
+    image: postgres:latest
+    environment:
+        POSTGRES_USER: admin
+        POSTGRES_PASSWORD: admin
+        POSTGRES_DB: avito-test
+
+  redis:
+    image: redis:latest
+
+  celery_worker:
+    build: .
+    command: celery -A services.celery_tasks.celery worker —loglevel=info -P eventlet
+    depends_on:
+      - postgres
+      - redis
+
+  flower:
+    build: .
+    command: celery -A services.celery_tasks.celery flower —port=5555
+    ports:
+      - "5555:5555"
+    depends_on:
+      - celery_worker

@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from sqlalchemy import (
     Column,
     Integer,
@@ -10,8 +11,8 @@ from sqlalchemy import (
     exists,
 )
 from sqlalchemy.orm import relationship, selectinload, Session
-from pydantic import BaseModel
 from database.base import Base
+from schemas.pydantic_models import BannerAdminResponse
 
 
 banner_tag = Table('banner_tag', Base.metadata,
@@ -92,16 +93,6 @@ class Feature(Base):
         session.commit()
 
 
-class BannerAdminResponse(BaseModel):
-    banner_id: int
-    tag_ids: list[int]
-    feature_id: int
-    content: dict
-    is_active: bool
-    created_at: str
-    updated_at: str = None
-
-
 class Banner(Base):
     __tablename__ = "banners"
 
@@ -134,7 +125,6 @@ class Banner(Base):
 
     def update(
             self,
-            session: Session,
             tags,
             feature_id,
             content,
@@ -148,7 +138,6 @@ class Banner(Base):
             self.content = content
         if is_active is not None:
             self.is_active = is_active
-        session.commit()
 
     @classmethod
     def delete(cls, session: Session, item_id):
@@ -198,22 +187,3 @@ class Banner(Base):
             cls.tags.any(id=tag_id)
         ).scalar()
         return banner
-
-
-class BannerResponse(BaseModel):
-    content: dict
-
-
-class BannerCreate(BaseModel):
-    tag_ids: list[int]
-    feature_id: int
-    content: dict
-    is_active: bool
-
-
-class BannerPatch(BaseModel):
-    tag_ids: list[int] = None
-    feature_id: int = None
-    content: dict = None
-    is_active: bool = None
-

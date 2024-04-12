@@ -1,20 +1,10 @@
 from datetime import datetime
-from pydantic import BaseModel
 from passlib.hash import bcrypt
 from sqlalchemy import Column, String, Integer, DateTime, Boolean
 from sqlalchemy.orm import validates
 from sqlalchemy.orm import Session
 from database.base import Base
-
-
-class UserCreate(BaseModel):
-    username: str
-    password: str
-
-
-class UserResponse(BaseModel):
-    id: int
-    username: str
+from schemas.pydantic_models import UserResponse
 
 
 class User(Base):

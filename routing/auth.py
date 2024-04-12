@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from database.base import get_session
 from services.config import settings
 from services.user import UserService
-from schemas.user import UserCreate, UserResponse, User
+from schemas.user import User
+from schemas.pydantic_models import UserCreate, UserResponse
 
 
 router = APIRouter()

@@ -1,11 +1,12 @@
 import pickle
 from fastapi import Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import select
 from sqlalchemy.orm import selectinload, Session
-from schemas.banner import Banner, Tag, Feature, BannerCreate, BannerPatch
+from schemas.banner import Banner, Tag, Feature
+from schemas.pydantic_models import BannerCreate, BannerPatch
 from schemas.user import User
 from services.user import UserService
+from services.celery_tasks import delete_banners_by_tag, delete_banners_by_feature
 
 
 user_service = UserService()
@@ -89,19 +90,10 @@ class BannerService:
     ):
         try:
             user_service.check_admin(user)
-            banners = session.execute(
-                select(Banner).where(
-                    Banner.feature_id == banner.feature_id,
-                    Banner.tags.any(Tag.id.in_(banner.tag_ids))
-                ))
-            if len(banners.scalars().all()) != 0:
+            banners = Banner.get_by_tags_and_feature(session=session, tag_ids=banner.tag_ids, feature_id=banner.feature_id)
+            if len(banners) != 0:
                 self.__raise400(detail="Нарушение однозначности")
-            tags = Tag.get_tags_by_id(
-                tag_ids=banner.tag_ids,
-                session=session,
-            )
-            if None in tags:
-                self.__raise400(detail="Один или несколько тегов отсутствуют")
+            tags = self.get_tags_by_id(session=session, tag_ids=banner.tag_ids)
             banner = Banner.add(
                 session=session,
                 feature_id=banner.feature_id,
@@ -139,19 +131,15 @@ class BannerService:
                 if len(banners) != 0:
                     if banners[0] != banner_to_update:
                         self.__raise400(detail="Нарушение однозначности")
-                tags = Tag.get_tags_by_id(
-                    tag_ids=new_banner.tag_ids,
-                    session=session,
-                )
-                if None in tags:
-                    self.__raise400(detail="Один или несколько тегов отсутствуют")
+                tags = self.get_tags_by_id(session=session, tag_ids=new_banner.tag_ids)
             banner_to_update.update(
-                session=session,
                 tags=tags,
                 feature_id=new_banner.feature_id,
                 content=new_banner.content,
                 is_active=new_banner.is_active,
             )
+            if session.is_modified(banner_to_update):
+                session.commit()
             return "OK"
         except ValueError:
             self.__raise400()
@@ -190,3 +178,26 @@ class BannerService:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Некорректные данные.{detail}",
         )
+
+    def get_tags_by_id(self, session: Session, tag_ids: list[int]):
+        tags = Tag.get_tags_by_id(
+            tag_ids=tag_ids,
+            session=session,
+        )
+        if None in tags:
+            self.__raise400(detail="Один или несколько тегов отсутствуют")
+        return tags
+
+
+    def delete_banners_by_tag_or_feature(
+            self,
+            feature_id: int = None,
+            tag_id: int = None,
+    ):
+        if feature_id and tag_id:
+            self.__raise400()
+        task = None
+        if feature_id:
+            task = delete_banners_by_feature.delay(feature_id)
+        if tag_id:
+            task = delete_banners_by_tag.delay(tag_id)

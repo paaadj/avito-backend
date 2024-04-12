@@ -1,11 +1,13 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from database.redis import get_redis
 from database.base import get_session
 from services.banner import BannerService
 from services.user import UserService
+from services.celery_tasks import delete_banners_by_feature, delete_banners_by_tag, celery
 from schemas.user import User
-from schemas.banner import BannerResponse, Tag, BannerCreate, BannerPatch, Feature
+from schemas.banner import Tag, Feature
+from schemas.pydantic_models import BannerResponse, BannerCreate, BannerPatch
 
 router = APIRouter()
 banner_service = BannerService()
@@ -61,6 +63,16 @@ async def create_banner(
         user=user,
         session=session,
     )
+
+
+@router.delete("/banner/delete", status_code=204)
+async def delete_banners_by_tag_or_feature(
+        feature_id: int = None,
+        tag_id: int = None,
+        user: User = Depends(user_service.get_current_user),
+):
+    user_service.check_admin(user)
+    banner_service.delete_banners_by_tag_or_feature(feature_id, tag_id)
 
 
 @router.patch("/banner/{item_id}")
