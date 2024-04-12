@@ -14,7 +14,7 @@ app.include_router(banner_router)
 @app.on_event("startup")
 async def start():
     pass
-    #init_models()
+    init_models()
 
 
 if __name__ == "__main__":
