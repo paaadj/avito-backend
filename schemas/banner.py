@@ -117,7 +117,12 @@ class Banner(Base):
 
     @classmethod
     def add(cls, session: Session, tags, feature_id, content, is_active=True):
-        banner = cls(content=content, tags=tags, feature_id=feature_id, is_active=is_active)
+        banner = cls(
+            content=content,
+            tags=tags,
+            feature_id=feature_id,
+            is_active=is_active
+        )
         session.add(banner)
         session.commit()
         return banner

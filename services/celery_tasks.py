@@ -1,10 +1,10 @@
 from celery import Celery
-from sqlalchemy.orm import Session
 from services.config import settings
 from database.base import get_session
 from schemas.banner import Banner
 
-REDIS_URL = f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_CELERY_DB}"
+REDIS_URL = (f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/"
+             f"{settings.REDIS_CELERY_DB}")
 
 celery = Celery('tasks', broker=REDIS_URL, backend=REDIS_URL)
 

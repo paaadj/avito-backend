@@ -37,7 +37,13 @@ class BannerService:
                         status_code=status.HTTP_403_FORBIDDEN,
                         detail="Пользователь не имеет доступа"
                     )
-            if not Tag.exists(session=session, item_id=tag_id) or not Feature.exists(session=session, item_id=feature_id):
+            if not Tag.exists(
+                    session=session,
+                    item_id=tag_id
+            ) or not Feature.exists(
+                session=session,
+                item_id=feature_id
+            ):
                 self.__raise400()
             banner = Banner.get(session=session, feature_id=feature_id, tag_id=tag_id)
             if banner is None:
@@ -90,7 +96,11 @@ class BannerService:
     ):
         try:
             user_service.check_admin(user)
-            banners = Banner.get_by_tags_and_feature(session=session, tag_ids=banner.tag_ids, feature_id=banner.feature_id)
+            banners = Banner.get_by_tags_and_feature(
+                session=session,
+                tag_ids=banner.tag_ids,
+                feature_id=banner.feature_id
+            )
             if len(banners) != 0:
                 self.__raise400(detail="Нарушение однозначности")
             tags = self.get_tags_by_id(session=session, tag_ids=banner.tag_ids)
@@ -125,7 +135,9 @@ class BannerService:
     ):
         user_service.check_admin(user)
         try:
-            banner_to_update = session.get(Banner, item_id, options=[selectinload(Banner.tags)])
+            banner_to_update = (
+                session.get(Banner, item_id, options=[selectinload(Banner.tags)])
+            )
             if banner_to_update is None:
                 self.__raise400()
             tags = []

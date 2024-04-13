@@ -1,4 +1,3 @@
-import pytest
 from fastapi.testclient import TestClient
 
 
@@ -55,7 +54,11 @@ def test_create_banner_with_non_existing_tag(client: TestClient, admin_token):
         "content": {"title": "some_title", "text": "some_text", "url": "some_url"},
         "is_active": True
     }
-    response = client.post("/banner", headers={"Authorization": f"Bearer {admin_token}"}, json=new_banner)
+    response = client.post(
+        "/banner",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json=new_banner
+    )
     assert response.status_code == 400
 
 
@@ -66,7 +69,11 @@ def test_create_banner_with_non_existing_feature(client: TestClient, admin_token
         "content": {"title": 1213},
         "is_active": True
     }
-    response = client.post("/banner", headers={"Authorization": f"Bearer {admin_token}"}, json=new_banner)
+    response = client.post(
+        "/banner",
+        headers={"Authorization": f"Bearer {admin_token}"},
+        json=new_banner
+    )
     assert response.status_code == 400
 
 
@@ -105,7 +112,10 @@ def test_delete_banner(client: TestClient, admin_token, resetup):
         headers={"Authorization": f"Bearer {admin_token}"}
     )
     assert old_banner_response.status_code == 200
-    delete_response = client.delete("/banner/1", headers={"Authorization": f"Bearer {admin_token}"})
+    delete_response = client.delete(
+        "/banner/1",
+        headers={"Authorization": f"Bearer {admin_token}"}
+    )
     assert delete_response.status_code == 204
     old_banner_response = client.get(
         "/user_banner?tag_id=1&feature_id=1&use_last_revision=true",
@@ -120,7 +130,10 @@ def test_delete_banner_by_user(client: TestClient, user_token):
         headers={"Authorization": f"Bearer {user_token}"}
     )
     assert old_banner_response.status_code == 200
-    delete_response = client.delete("/banner/1", headers={"Authorization": f"Bearer {user_token}"})
+    delete_response = client.delete(
+        "/banner/1",
+        headers={"Authorization": f"Bearer {user_token}"}
+    )
     assert delete_response.status_code == 403
     old_banner_response = client.get(
         "/user_banner?tag_id=1&feature_id=1&use_last_revision=true",

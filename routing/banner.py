@@ -1,10 +1,9 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from database.redis import get_redis
 from database.base import get_session
 from services.banner import BannerService
 from services.user import UserService
-from services.celery_tasks import delete_banners_by_feature, delete_banners_by_tag, celery
 from schemas.user import User
 from schemas.banner import Tag, Feature
 from schemas.pydantic_models import BannerResponse, BannerCreate, BannerPatch
@@ -31,7 +30,8 @@ async def get_user_banner(
     :param user:
     :param session:
     :param redis_client:
-    :return: Данные баннера, если есть, если не найден, то 404, если некорректные данные, то 400, если не авторизован, то 401
+    :return: Данные баннера, если есть, если не найден, то 404,
+     если некорректные данные, то 400, если не авторизован, то 401
     """
     return banner_service.get_banner_to_user(
         session=session,
@@ -83,7 +83,8 @@ async def create_banner(
     :param banner: Все данные баннера
     :param user:
     :param session:
-    :return: ID нового баннера, если создан, если неверные данные, то 400, если неавторизован, то 401, если нет прав, то 403
+    :return: ID нового баннера, если создан, если неверные данные, то 400,
+     если неавторизован, то 401, если нет прав, то 403
     """
     return banner_service.create_banner(
         banner=banner,
@@ -103,7 +104,8 @@ async def delete_banners_by_tag_or_feature(
     :param feature_id: ID фичи
     :param tag_id: ID тега
     :param user:
-    :return: Если неавторизован, то 401, если нет прав, то 403. Если задан и тег и фича, то 400(можно только что то одно). Иначе 204
+    :return: Если неавторизован, то 401, если нет прав, то 403.
+    Если задан и тег и фича, то 400(можно только что то одно). Иначе 204
     """
     user_service.check_admin(user)
     banner_service.delete_banners_by_tag_or_feature(feature_id, tag_id)
@@ -122,7 +124,8 @@ async def update_banner(
     :param banner: Новые поля баннера, которые необходимо обновить
     :param user:
     :param session:
-    :return: 400, если некорректные данные, 401 если неавторизован, 403 если нет прав, иначе 200
+    :return: 400, если некорректные данные, 401 если неавторизован,
+     403 если нет прав, иначе 200
     """
     return banner_service.update_banner(
         session=session,

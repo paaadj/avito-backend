@@ -12,9 +12,18 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
 class UserService:
-    def create_user(self, session: Session, user: UserCreate, is_admin: bool = False) -> User:
+    def create_user(
+            self,
+            session: Session,
+            user: UserCreate,
+            is_admin: bool = False
+    ) -> User:
         try:
-            existing_user = session.query(User).filter(User.username == user.username).scalar()
+            existing_user = (
+                session.query(User)
+                .filter(User.username == user.username)
+                .scalar()
+            )
             if existing_user:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
@@ -25,7 +34,12 @@ class UserService:
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail=f"Длина пароля '{user.password}' {len(user.password)} < 8"
                 )
-            new_user = User.add(session=session, username=user.username, password=user.password, is_admin=is_admin)
+            new_user = User.add(
+                session=session,
+                username=user.username,
+                password=user.password,
+                is_admin=is_admin
+            )
             return new_user
         except ValueError as exc:
             raise HTTPException(
@@ -53,21 +67,37 @@ class UserService:
             "username": user.username,
             "is_admin": user.is_admin,
         }
-        access_token = jwt.encode(user_obj, key=settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+        access_token = jwt.encode(
+            user_obj,
+            key=settings.SECRET_KEY,
+            algorithm=settings.ALGORITHM
+        )
         return {
             "access_token": access_token,
             "token_type": "bearer",
         }
 
-    def get_current_user(self, session: Session = Depends(get_session), access_token: str = Depends(oauth2_scheme)):
+    def get_current_user(
+            self,
+            session: Session = Depends(get_session),
+            access_token: str = Depends(oauth2_scheme)
+    ):
         try:
             if access_token is None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Not authenticated"
                 )
-            payload = jwt.decode(access_token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-            user = session.query(User).filter(User.username == payload.get('username')).scalar()
+            payload = jwt.decode(
+                access_token,
+                settings.SECRET_KEY,
+                algorithms=[settings.ALGORITHM]
+            )
+            user = (
+                session.query(User)
+                .filter(User.username == payload.get('username'))
+                .scalar()
+            )
             if user is None:
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
