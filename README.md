@@ -14,6 +14,8 @@
 4. Для проверки работоспособности сервиса,  по адресу http://localhost:8000/docs, доступен интерфейс
 Swagger для ручного тестирования API
 
+Все переменные можно поменять в файле docker-compose.yml
+
 ## Запуск проекта вручную
 Если Вы хотите выполнить запуск проекта без использования Docker, то следуйте следующим шагам:
 
@@ -29,7 +31,7 @@ venv/Scripts/activate     # для Windows
 pip install -r req.txt
 ```
 4. Установите PostgreSQL и Redis на Ваш компьютер, если еще не установлены и запустите их.
-5. Создайте базу данных Postgre с названием "avito-test".
+5. Создайте в Postgre пользователя admin с паролем admin и базу данных с названием "avito-test". <br> Если вы хотите поменять название или пользователя, то это можно сделать в файле services/config.py
 6. Запустите обработчика Celery задач:
 ```bash
 celery -A services.celery_tasks.celery worker —loglevel=info -P eventlet
