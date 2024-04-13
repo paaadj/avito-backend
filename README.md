@@ -113,7 +113,7 @@ HTTP 400 BAD REQUEST
 
 ### Получение баннера
 #### Запрос
-```http
+```curl
 curl -X 'GET' \
   'http://127.0.0.1:8000/user_banner?tag_id=1&feature_id=1&use_last_revision=false' \
   -H 'accept: application/json' \
@@ -128,4 +128,5 @@ curl -X 'GET' \
     "text": "some_text",
     "url": "some_url"
   }
-}```
+}
+```
