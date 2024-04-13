@@ -94,6 +94,13 @@ class BannerService:
             if len(banners) != 0:
                 self.__raise400(detail="Нарушение однозначности")
             tags = self.get_tags_by_id(session=session, tag_ids=banner.tag_ids)
+            if None in tags:
+                self.__raise400()
+                return
+            feature = Feature.exists(session=session, item_id=banner.feature_id)
+            if not feature:
+                self.__raise400()
+                return
             banner = Banner.add(
                 session=session,
                 feature_id=banner.feature_id,
@@ -104,10 +111,10 @@ class BannerService:
             return {'banner_id': banner.id}
         except ValueError:
             self.__raise400()
-            return None
+            return
         except IntegrityError:
             self.__raise400()
-            return None
+            return
 
     def update_banner(
             self,
@@ -188,7 +195,6 @@ class BannerService:
             self.__raise400(detail="Один или несколько тегов отсутствуют")
         return tags
 
-
     def delete_banners_by_tag_or_feature(
             self,
             feature_id: int = None,
@@ -196,8 +202,7 @@ class BannerService:
     ):
         if feature_id and tag_id:
             self.__raise400()
-        task = None
         if feature_id:
-            task = delete_banners_by_feature.delay(feature_id)
+            delete_banners_by_feature.delay(feature_id)
         if tag_id:
-            task = delete_banners_by_tag.delay(tag_id)
+            delete_banners_by_tag.delay(tag_id)

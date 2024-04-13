@@ -21,12 +21,11 @@ banner_tag = Table('banner_tag', Base.metadata,
                        Integer,
                        ForeignKey('banners.id', ondelete="CASCADE")
                    ),
-                    Column(
-                        'tag_id',
-                        Integer,
-                        ForeignKey('tags.id', ondelete="CASCADE")
-                    )
-                    )
+                   Column(
+                       'tag_id',
+                       Integer,
+                       ForeignKey('tags.id', ondelete="CASCADE")
+                   ))
 
 
 class Tag(Base):
@@ -178,7 +177,6 @@ class Banner(Base):
         query = query.options(selectinload(Banner.tags))
         banners = query.all()
         return banners
-
 
     @classmethod
     def get(cls, session: Session, feature_id: int, tag_id: int):

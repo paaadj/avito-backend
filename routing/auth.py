@@ -39,4 +39,3 @@ def get_user(
         user: User = Depends(user_service.get_current_user),
 ):
     return user.to_response()
-

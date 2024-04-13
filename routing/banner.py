@@ -52,7 +52,7 @@ async def get_banners(
     )
 
 
-@router.post("/banner")
+@router.post("/banner", status_code=201)
 async def create_banner(
         banner: BannerCreate,
         user: User = Depends(user_service.get_current_user),

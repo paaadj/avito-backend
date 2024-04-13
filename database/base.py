@@ -3,7 +3,6 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 from services.config import settings
 
 engine = create_engine(settings.DATABASE_URL, echo=False)
-#engine = create_engine(settings.DATABASE_URL, echo=False, pool_size=1000)
 Base = declarative_base()
 Session = sessionmaker(engine, expire_on_commit=False)
 
