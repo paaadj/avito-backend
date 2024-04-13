@@ -23,6 +23,16 @@ async def get_user_banner(
         session: Session = Depends(get_session),
         redis_client=Depends(get_redis)
 ):
+    """
+    Получить баннер в формате для пользователя по тегу и фиче
+    :param tag_id: ID тега
+    :param feature_id: ID фичи
+    :param use_last_revision: Вернуть самую новую версию, если true
+    :param user:
+    :param session:
+    :param redis_client:
+    :return: Данные баннера, если есть, если не найден, то 404, если некорректные данные, то 400, если не авторизован, то 401
+    """
     return banner_service.get_banner_to_user(
         session=session,
         tag_id=tag_id,
@@ -42,6 +52,16 @@ async def get_banners(
         offset: int = None,
         session: Session = Depends(get_session),
 ):
+    """
+    Получить баннеры для администратора с фильтрацией по фиче или тегу
+    :param user:
+    :param feature_id: ID фичи
+    :param tag_id: ID тега
+    :param limit: Ограничение по количеству
+    :param offset: Пропуск баннеров с начала
+    :param session:
+    :return: Список баннеров, если неавторизован, то 401, если нет прав, то 403
+    """
     return banner_service.get_banners(
         session=session,
         user=user,
@@ -58,6 +78,13 @@ async def create_banner(
         user: User = Depends(user_service.get_current_user),
         session: Session = Depends(get_session),
 ):
+    """
+    Создать баннер
+    :param banner: Все данные баннера
+    :param user:
+    :param session:
+    :return: ID нового баннера, если создан, если неверные данные, то 400, если неавторизован, то 401, если нет прав, то 403
+    """
     return banner_service.create_banner(
         banner=banner,
         user=user,
@@ -71,6 +98,13 @@ async def delete_banners_by_tag_or_feature(
         tag_id: int = None,
         user: User = Depends(user_service.get_current_user),
 ):
+    """
+    Удалить баннер по тегу или фиче
+    :param feature_id: ID фичи
+    :param tag_id: ID тега
+    :param user:
+    :return: Если неавторизован, то 401, если нет прав, то 403. Если задан и тег и фича, то 400(можно только что то одно). Иначе 204
+    """
     user_service.check_admin(user)
     banner_service.delete_banners_by_tag_or_feature(feature_id, tag_id)
 
@@ -82,6 +116,14 @@ async def update_banner(
         user: User = Depends(user_service.get_current_user),
         session: Session = Depends(get_session)
 ):
+    """
+    Обновить баннер
+    :param item_id: ID баннера
+    :param banner: Новые поля баннера, которые необходимо обновить
+    :param user:
+    :param session:
+    :return: 400, если некорректные данные, 401 если неавторизован, 403 если нет прав, иначе 200
+    """
     return banner_service.update_banner(
         session=session,
         item_id=item_id,
@@ -96,6 +138,13 @@ async def delete_banner(
         user: User = Depends(user_service.get_current_user),
         session: Session = Depends(get_session),
 ):
+    """
+    Удалить баннер по ID
+    :param item_id: ID баннера
+    :param user:
+    :param session:
+    :return: 204, если баннер существует, если нет, то 400
+    """
     return banner_service.delete_banner(
         session=session,
         item_id=item_id,
@@ -108,6 +157,12 @@ async def create_tag(
         user: User = Depends(user_service.get_current_user),
         session: Session = Depends(get_session),
 ):
+    """
+    Создать тег
+    :param user:
+    :param session:
+    :return: ID тега
+    """
     return banner_service.create_tag(session=session, user=user)
 
 
@@ -117,6 +172,13 @@ async def delete_tag(
         user: User = Depends(user_service.get_current_user),
         session: Session = Depends(get_session),
 ):
+    """
+    Удалить тег
+    :param item_id:
+    :param user:
+    :param session:
+    :return: Если существует 204, если нет 400
+    """
     user_service.check_admin(user)
     Tag.delete(session=session, item_id=item_id)
     return
@@ -127,6 +189,12 @@ async def create_feature(
         user: User = Depends(user_service.get_current_user),
         session: Session = Depends(get_session),
 ):
+    """
+    Создать фичу
+    :param user:
+    :param session:
+    :return: ID фичи
+    """
     return banner_service.create_feature(session=session, user=user)
 
 
@@ -136,6 +204,13 @@ async def delete_feature(
         user: User = Depends(user_service.get_current_user),
         session: Session = Depends(get_session),
 ):
+    """
+    Удалить фичу
+    :param item_id: ID фичи
+    :param user:
+    :param session:
+    :return: 204, если фича существует, иначе 400
+    """
     user_service.check_admin(user)
     Feature.delete(session=session, item_id=item_id)
     return
@@ -143,9 +218,19 @@ async def delete_feature(
 
 @router.get('/tags')
 async def get_tags(session: Session = Depends(get_session)):
+    """
+    Получить теги
+    :param session:
+    :return: Список всех тегов
+    """
     return {"tags": Tag.all(session=session)}
 
 
 @router.get("/features")
 async def get_features(session: Session = Depends(get_session)):
+    """
+    Получить фичи
+    :param session:
+    :return: Список фич
+    """
     return {"features": Feature.all(session=session)}
